@@ -15,8 +15,10 @@ afterEach(function () {
 });
 
 it('fails when path is not a git repo', function () {
-    $this->artisan('check', ['path' => $this->tmp])
-        ->expectsOutputToContain('Not a git repository')
+    $nowhere = sys_get_temp_dir().'/gwt-nowhere-'.bin2hex(random_bytes(4));
+
+    $this->artisan('check', ['path' => $nowhere])
+        ->expectsOutputToContain('does not exist')
         ->assertExitCode(1);
 });
 

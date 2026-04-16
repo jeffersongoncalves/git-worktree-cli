@@ -24,6 +24,10 @@ class GitRepoBuilder
             mkdir($dir, 0777, true);
         }
 
+        // Prevent git from walking up from this dir and finding the parent
+        // project repo when the fixture dir is nested inside it.
+        putenv('GIT_CEILING_DIRECTORIES='.$dir);
+
         return $dir;
     }
 

@@ -18,6 +18,10 @@ class GitWorktreeService
 
     public function isGitRepository(string $cwd): bool
     {
+        if (! is_dir($cwd)) {
+            return false;
+        }
+
         $process = $this->git($cwd, ['rev-parse', '--is-inside-work-tree']);
         $process->run();
 

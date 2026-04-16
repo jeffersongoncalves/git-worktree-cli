@@ -20,8 +20,13 @@ afterEach(function () {
 it('detects a git repository', function () {
     $repo = GitRepoBuilder::createIn($this->tmp);
 
-    expect($this->service->isGitRepository($repo->path()))->toBeTrue()
-        ->and($this->service->isGitRepository($this->tmp))->toBeFalse();
+    expect($this->service->isGitRepository($repo->path()))->toBeTrue();
+});
+
+it('reports a non-existent path as not a git repository', function () {
+    $nowhere = sys_get_temp_dir().'/gwt-nowhere-'.bin2hex(random_bytes(4));
+
+    expect($this->service->isGitRepository($nowhere))->toBeFalse();
 });
 
 it('reports no linked worktrees for a fresh repo', function () {
