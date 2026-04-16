@@ -2,6 +2,12 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## v0.0.4 - 2026-04-16
+
+### What's Changed
+
+- **Fix (release pipeline)**: the tag-move step in `build.yml` now correctly targets `main` during `workflow_run`-triggered rebuilds. The previous version fell back to `github.event.workflow_run.head_branch` which, for release events, resolves to the tag name — the commit landed on a detached HEAD and the push was rejected as a ref collision with the existing tag. This release validates the fully automated flow end-to-end.
+
 ## v0.0.3 - 2026-04-16
 
 ### What's Changed
@@ -14,6 +20,7 @@ All notable changes to `git-worktree-cli` will be documented in this file.
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 ```
 ## v0.0.2 - 2026-04-16
@@ -31,6 +38,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 ```
