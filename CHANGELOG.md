@@ -2,6 +2,14 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## v0.0.5 - 2026-04-16
+
+### What's Changed
+
+- **Fix (release pipeline)**: `build.yml` now resolves the build tag from `workflow_run.head_branch` instead of `git describe --tags --abbrev=0`. After Update Changelog commits the version bump, two tags (previous and current release) share a commit and `git describe` returned the older one, so the rebuilt PHAR was embedded with the wrong version and the tag-move step moved the wrong tag. Regular push builds still use `git describe`.
+
+**v0.0.4 is broken** — its attached PHAR is fine (built by publish-phar.yml with the correct version), but `composer require v0.0.4` resolves to a PHAR that still reports v0.0.3 because of the bug above. Upgrade to v0.0.5.
+
 ## v0.0.4 - 2026-04-16
 
 ### What's Changed
@@ -22,6 +30,7 @@ git-worktree self-update
 composer global update jeffersongoncalves/git-worktree-cli
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -38,6 +47,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
