@@ -2,6 +2,20 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## v0.0.3 - 2026-04-16
+
+### What's Changed
+
+- **Fix (release pipeline)**: the release tag now automatically moves to the rebuilt-PHAR commit after a release. Previously the tag stayed on the pre-rebuild commit, so `composer require` pulled a PHAR with the previous version embedded — users had to run `git-worktree self-update` after install to get the correct version.
+
+### Upgrading
+
+```bash
+git-worktree self-update
+# or
+composer global update jeffersongoncalves/git-worktree-cli
+
+```
 ## v0.0.2 - 2026-04-16
 
 ### What's Changed
@@ -17,6 +31,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 ```
 ## v0.0.1 - 2026-04-16
