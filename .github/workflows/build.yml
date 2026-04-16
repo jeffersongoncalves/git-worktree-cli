@@ -24,9 +24,20 @@ jobs:
           # PHAR lands on main, not on the tag ref.
           ref: ${{ github.event_name == 'workflow_run' && 'main' || github.ref }}
 
-      - name: Get latest tag
+      # On workflow_run the release tag may share a commit with an older tag,
+      # so `git describe` cannot be trusted to pick the right one. Use the
+      # triggering workflow's head_branch (which equals the tag name for
+      # release events) and fall back to `git describe` for regular pushes.
+      - name: Resolve build tag
         id: version
-        run: echo "tag=$(git describe --tags --abbrev=0 2>/dev/null || echo unreleased)" >> "$GITHUB_OUTPUT"
+        env:
+          TRIGGER_TAG: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ] && [ -n "$TRIGGER_TAG" ] && [ "$TRIGGER_TAG" != "main" ]; then
+            echo "tag=$TRIGGER_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$(git describe --tags --abbrev=0 2>/dev/null || echo unreleased)" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
