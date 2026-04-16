@@ -1,0 +1,56 @@
+name: Publish the released PHAR
+
+on:
+  release:
+    types: [ created ]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+
+    name: Release PHAR
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Get release version
+        id: tag
+        run: echo "tag=$(git describe --tags --abbrev=0 2>/dev/null || echo unreleased)" >> "$GITHUB_OUTPUT"
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip
+          ini-values: error_reporting=E_ALL, phar.readonly=Off
+          tools: composer:v2
+          coverage: none
+
+      - name: Install the dependencies
+        run: composer install --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-suggest --no-scripts --ansi -v --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix --ignore-platform-req=ext-sockets
+
+      - name: Update the dependencies
+        run: composer update --prefer-dist --optimize-autoloader --no-interaction --no-progress --no-suggest --no-scripts --ansi -v --ignore-platform-req=ext-pcntl --ignore-platform-req=ext-posix --ignore-platform-req=ext-sockets
+
+      - name: Create the PHAR file.
+        run: php git-worktree app:build git-worktree.phar --build-version=${{ steps.tag.outputs.tag }} -v
+
+      - name: Upload the PHAR artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: git-worktree.phar
+          path: builds/git-worktree.phar
+
+      - name: Upload the PHAR to release
+        run: gh release upload ${{ github.event.release.tag_name }} builds/git-worktree.phar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cp git-worktree.phar to git-worktree
+        run: cp builds/git-worktree.phar builds/git-worktree
