@@ -3,21 +3,23 @@ name: builds
 on:
   push:
     branches: [main]
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Update Changelog"]
+    types: [completed]
 
 permissions: write-all
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ref: ${{ github.event.release.target_commitish || github.ref }}
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
 
       - name: Get latest tag
         id: version
@@ -42,4 +44,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: Generate build
-          branch: ${{ github.event.release.target_commitish || github.ref_name }}
+          branch: ${{ github.event.workflow_run.head_branch || github.ref_name }}
