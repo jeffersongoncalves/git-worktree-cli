@@ -1,6 +1,6 @@
 <div class="filament-hidden">
 
-![Git Worktree CLI](https://raw.githubusercontent.com/jeffersongoncalves/git-worktree-cli/main/art/jeffersongoncalves-git-worktree-cli.jpg)
+![Git Worktree CLI](https://raw.githubusercontent.com/jeffersongoncalves/git-worktree-cli/main/art/jeffersongoncalves-git-worktree-cli.png)
 
 </div>
 
