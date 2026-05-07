@@ -2,6 +2,20 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.1 - 2026-05-07
+
+### What's Changed
+
+- **Fix (`add` command)**: replaced the `Laravel\Prompts\confirm()` path with `$this->confirm()`. The previous code short-circuited when `$this->input->isInteractive()` returned false (GitHub Actions runner), so under CI the create-branch prompt was never displayed and `expectsConfirmation` in the test suite failed. `$this->confirm()` integrates cleanly with Pest's `expectsConfirmation` regardless of TTY state.
+
+#### Upgrading
+
+```bash
+git-worktree self-update
+# or
+composer global update jeffersongoncalves/git-worktree-cli
+
+```
 ## 1.0.0 - 2026-05-07
 
 ### What's Changed
@@ -16,6 +30,7 @@ git-worktree add feature/foo          # → <repo>-foo
 git-worktree add my-feat --yes        # create new branch from main
 git-worktree add my-feat --target=/tmp/wt-myfeat
 
+
 ```
 #### Upgrading
 
@@ -23,6 +38,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 ```
 ## v0.0.5 - 2026-04-16
@@ -55,6 +71,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -71,6 +88,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
