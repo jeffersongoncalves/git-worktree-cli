@@ -6,8 +6,6 @@ use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 
-use function Laravel\Prompts\confirm;
-
 class AddCommand extends Command
 {
     protected $signature = 'add
@@ -151,15 +149,9 @@ class AddCommand extends Command
             return true;
         }
 
-        if (! $this->input->isInteractive()) {
-            $this->components->error("Branch '{$branch}' does not exist locally or on the remote. Pass --yes to create it.");
-
-            return false;
-        }
-
-        return confirm(
-            label: "Branch '{$branch}' does not exist. Create new branch and worktree?",
-            default: true,
+        return $this->confirm(
+            "Branch '{$branch}' does not exist. Create new branch and worktree?",
+            true,
         );
     }
 
