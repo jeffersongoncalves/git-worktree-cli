@@ -185,6 +185,77 @@ class GitWorktreeService
     }
 
     /**
+     * Run `git fetch <remote>`.
+     *
+     * @return array{0: bool, 1: string} success flag plus combined output
+     */
+    public function fetch(string $cwd, string $remote): array
+    {
+        $process = $this->git($cwd, ['fetch', $remote]);
+        $process->setTimeout(120);
+        $process->run();
+
+        $output = trim($process->getOutput().$process->getErrorOutput());
+
+        return [$process->isSuccessful(), $output];
+    }
+
+    /**
+     * Check whether a branch exists on the given remote via ls-remote.
+     */
+    public function branchExistsOnRemote(string $cwd, string $remote, string $branch): bool
+    {
+        $process = $this->git($cwd, ['ls-remote', '--heads', $remote, $branch]);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return false;
+        }
+
+        return trim($process->getOutput()) !== '';
+    }
+
+    /**
+     * Check whether a local branch exists.
+     */
+    public function branchExistsLocally(string $cwd, string $branch): bool
+    {
+        return $this->refExists($cwd, 'refs/heads/'.$branch);
+    }
+
+    /**
+     * Run `git worktree add` with the given args.
+     *
+     * @param  list<string>  $args
+     * @return array{0: bool, 1: string} success flag plus combined output
+     */
+    public function addWorktree(string $cwd, array $args): array
+    {
+        $process = $this->git($cwd, ['worktree', 'add', ...$args]);
+        $process->run();
+
+        $output = trim($process->getOutput().$process->getErrorOutput());
+
+        return [$process->isSuccessful(), $output];
+    }
+
+    /**
+     * Find the path of the main worktree from a previously-listed set.
+     *
+     * @param  list<Worktree>  $worktrees
+     */
+    public function mainWorktreePath(array $worktrees): ?string
+    {
+        foreach ($worktrees as $wt) {
+            if ($wt->isMainWorktree) {
+                return $wt->path;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Remove a linked worktree at the given path.
      *
      * @return array{0: bool, 1: string} success flag plus combined output

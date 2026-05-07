@@ -54,6 +54,32 @@ git-worktree check --main=develop
 git-worktree check --only-unmerged
 ```
 
+### Add a worktree
+
+```bash
+# Existing local branch — creates <repo-parent>/<repo>-<branch>
+git-worktree add feature
+
+# Branch with a slash — uses the suffix after the last "/"
+# (feature/foo → <repo-parent>/<repo>-foo)
+git-worktree add feature/foo
+
+# Existing remote branch — auto-tracks origin/<branch>
+git-worktree add hotfix/login
+
+# Brand-new branch from the auto-detected main (skip prompt)
+git-worktree add my-new-feature --yes
+
+# Custom base ref + custom target directory
+git-worktree add my-feat --from=develop --target=/tmp/wt-myfeat
+
+# Skip the network check (use only local refs)
+git-worktree add my-feat --no-fetch
+```
+
+Resolution order: existing local branch → existing remote branch (creates a
+tracking branch) → new branch from `--from` or the auto-detected main.
+
 ### Clean merged worktrees
 
 ```bash
@@ -148,7 +174,7 @@ Fresh git repositories used by the test suite are created under
 
 1. Merge changes to `main` — CI builds a fresh `builds/git-worktree`
    against the latest tag and commits it back.
-2. Create a new GitHub release (tag `vX.Y.Z`).
+2. Create a new GitHub release (tag `X.Y.Z`, no `v` prefix).
 3. The `publish-phar.yml` workflow attaches `git-worktree.phar` to the
    release and `update-changelog.yml` updates `CHANGELOG.md` + `version.txt`.
 
