@@ -2,6 +2,29 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.0 - 2026-05-07
+
+### What's Changed
+
+- **Feature**: new `add` command creates a worktree for a new or existing branch. Worktree path defaults to `<repo-parent>/<repo>-<suffix>` where the suffix is the segment after the last `/` in the branch name (or the full branch name when no slash). Validates the branch on the remote via `ls-remote`; tracks `origin/<branch>` when found, otherwise prompts to create a brand-new branch from the auto-detected main.
+
+#### Usage
+
+```bash
+git-worktree add feature
+git-worktree add feature/foo          # → <repo>-foo
+git-worktree add my-feat --yes        # create new branch from main
+git-worktree add my-feat --target=/tmp/wt-myfeat
+
+```
+#### Upgrading
+
+```bash
+git-worktree self-update
+# or
+composer global update jeffersongoncalves/git-worktree-cli
+
+```
 ## v0.0.5 - 2026-04-16
 
 ### What's Changed
@@ -31,6 +54,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -47,6 +71,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
