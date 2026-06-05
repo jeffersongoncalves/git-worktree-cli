@@ -97,7 +97,55 @@ git-worktree clean --yes --delete-branch --force
 
 # Only remove branches directly merged (exclude squash/rebase detection)
 git-worktree clean --strict
+
+# Never remove these branches, even if merged (repeatable, globs allowed)
+git-worktree clean --protect=develop --protect=release/*
+
+# Ignore the per-repo protected-branches config file for this run
+git-worktree clean --no-config
 ```
+
+### Protected branches
+
+Some branches stay merged but should never be cleaned (long-lived `develop`,
+`staging`, `release/*`, …). The main branch is always skipped automatically;
+protection is for the *extra* branches you want to keep.
+
+Two ways to protect, combined as a union on every `clean` run:
+
+1. **Per-run flag** — `--protect=<branch-or-glob>` (repeatable).
+2. **Per-repo config file** — persistent, managed with `config:*` commands.
+
+```bash
+# Add / remove protected branches (exact names or globs)
+git-worktree config:protect develop
+git-worktree config:protect 'release/*'
+git-worktree config:unprotect develop
+
+# Inspect the resolved config (slug, file path, enabled flag, branch list)
+git-worktree config:show
+
+# Turn the file off / on without losing its contents
+git-worktree config:disable
+git-worktree config:enable
+```
+
+The config lives at `~/.config/git-worktree/<owner>-<repo>.json`
+(honoring `XDG_CONFIG_HOME`; the slug is derived from the `origin` remote,
+falling back to the directory name plus a short hash when there is no remote):
+
+```json
+{
+    "protect": {
+        "enabled": true,
+        "branches": ["develop", "release/*", "staging"]
+    }
+}
+```
+
+`--no-config` ignores the file for a single run; `config:disable` (or
+`"enabled": false`) turns it off persistently. Either way, `--protect` flags
+still apply.
 
 ### List worktrees
 

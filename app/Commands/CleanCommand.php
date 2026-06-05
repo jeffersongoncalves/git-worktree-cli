@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\DTOs\MergeStatus;
+use App\Services\ConfigService;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
@@ -18,11 +19,13 @@ class CleanCommand extends Command
         {--delete-branch : Also delete the local branch after removing the worktree}
         {--force : Force removal (pass --force to git worktree remove, use -D to delete branch)}
         {--strict : Only consider branches directly merged (exclude squash/rebase detection)}
+        {--protect=* : Branch name or glob to never remove (repeatable, e.g. --protect=develop --protect=release/*)}
+        {--no-config : Ignore the per-repo protected-branches config file}
         {--y|yes : Skip confirmation prompt}';
 
     protected $description = 'Remove worktrees whose branches are already merged into the main branch';
 
-    public function handle(GitWorktreeService $service): int
+    public function handle(GitWorktreeService $service, ConfigService $config): int
     {
         $cwd = $this->resolveCwd();
 
@@ -57,8 +60,14 @@ class CleanCommand extends Command
         $this->components->info("Repository: <comment>{$cwd}</comment>");
         $this->components->info("Main branch: <comment>{$mainBranch}</comment>");
 
+        $protected = $this->resolveProtected($config, $cwd);
+
+        if ($protected !== []) {
+            $this->components->info('Protected: <comment>'.implode(', ', $protected).'</comment>');
+        }
+
         $results = $service->analyzeWorktrees($cwd, $worktrees, $mainBranch);
-        $candidates = $this->filterCandidates($results);
+        $candidates = $this->filterCandidates($results, $config, $protected);
 
         if ($candidates === []) {
             $this->newLine();
@@ -86,10 +95,31 @@ class CleanCommand extends Command
     }
 
     /**
+     * Combine --protect options with the per-repo config file (unless --no-config).
+     *
+     * @return list<string>
+     */
+    private function resolveProtected(ConfigService $config, string $cwd): array
+    {
+        $fromConfig = $config->protectedBranches($cwd, ! $this->option('no-config'));
+
+        $fromFlag = array_values(array_filter(
+            array_map(static fn ($v): string => trim((string) $v), (array) $this->option('protect')),
+            static fn (string $v): bool => $v !== '',
+        ));
+
+        $merged = array_values(array_unique([...$fromConfig, ...$fromFlag]));
+        sort($merged);
+
+        return $merged;
+    }
+
+    /**
      * @param  list<MergeStatus>  $results
+     * @param  list<string>  $protected
      * @return list<MergeStatus>
      */
-    private function filterCandidates(array $results): array
+    private function filterCandidates(array $results, ConfigService $config, array $protected): array
     {
         $allowed = [MergeStatus::MERGED, MergeStatus::SAME_AS_MAIN];
 
@@ -97,10 +127,33 @@ class CleanCommand extends Command
             $allowed[] = MergeStatus::SQUASH_MERGED;
         }
 
-        return array_values(array_filter(
+        $skipped = [];
+
+        $candidates = array_values(array_filter(
             $results,
-            fn (MergeStatus $r) => in_array($r->status, $allowed, true),
+            function (MergeStatus $r) use ($allowed, $config, $protected, &$skipped): bool {
+                if (! in_array($r->status, $allowed, true)) {
+                    return false;
+                }
+
+                $branch = $r->worktree->shortBranch();
+
+                if ($branch !== null && $config->isProtected($branch, $protected)) {
+                    $skipped[] = $branch;
+
+                    return false;
+                }
+
+                return true;
+            },
         ));
+
+        if ($skipped !== []) {
+            $this->newLine();
+            $this->components->info('Protected (kept): <comment>'.implode(', ', $skipped).'</comment>');
+        }
+
+        return $candidates;
     }
 
     /**
