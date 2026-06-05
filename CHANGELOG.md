@@ -2,6 +2,10 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.2 - 2026-06-04
+
+Protect branches from `clean` removal via `--protect` flag (repeatable, glob-aware) and a per-repo config file at ~/.config/git-worktree/<owner>-<repo>.json. New `config:show|protect|unprotect|enable|disable` commands. `--no-config` skips the file per run.
+
 ## 1.0.1 - 2026-05-07
 
 ### What's Changed
@@ -14,6 +18,7 @@ All notable changes to `git-worktree-cli` will be documented in this file.
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 ```
 ## 1.0.0 - 2026-05-07
@@ -31,6 +36,7 @@ git-worktree add my-feat --yes        # create new branch from main
 git-worktree add my-feat --target=/tmp/wt-myfeat
 
 
+
 ```
 #### Upgrading
 
@@ -38,6 +44,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 ```
@@ -72,6 +79,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -88,6 +96,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
