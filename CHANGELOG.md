@@ -2,6 +2,10 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.3 - 2026-06-06
+
+Validate the version.txt release flow (no tag-move). Embedded version resolved from version.txt; release tag lands on a commit whose PHAR already embeds 1.0.3.
+
 ## 1.0.2 - 2026-06-04
 
 Protect branches from `clean` removal via `--protect` flag (repeatable, glob-aware) and a per-repo config file at ~/.config/git-worktree/<owner>-<repo>.json. New `config:show|protect|unprotect|enable|disable` commands. `--no-config` skips the file per run.
@@ -18,6 +22,7 @@ Protect branches from `clean` removal via `--protect` flag (repeatable, glob-awa
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 ```
@@ -37,6 +42,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 
 
 
+
 ```
 #### Upgrading
 
@@ -44,6 +50,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
@@ -80,6 +87,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -96,6 +104,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
