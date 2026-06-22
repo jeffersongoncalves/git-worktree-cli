@@ -114,6 +114,16 @@ it('classifies merged, squash-merged and unmerged worktrees', function () {
     ]);
 });
 
+it('detects whether a worktree declares submodules', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    expect($this->service->hasSubmodules($repo->path()))->toBeFalse();
+
+    file_put_contents($repo->path('.gitmodules'), "[submodule \"libs/foo\"]\n\tpath = libs/foo\n\turl = https://example.com/foo.git\n");
+
+    expect($this->service->hasSubmodules($repo->path()))->toBeTrue();
+});
+
 it('removes a worktree and deletes its branch', function () {
     $repo = GitRepoBuilder::createIn($this->tmp);
     $repo->checkoutNewBranch('feat');

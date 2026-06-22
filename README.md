@@ -75,10 +75,17 @@ git-worktree add my-feat --from=develop --target=/tmp/wt-myfeat
 
 # Skip the network check (use only local refs)
 git-worktree add my-feat --no-fetch
+
+# Skip recursive submodule init in the new worktree
+git-worktree add my-feat --no-submodules
 ```
 
 Resolution order: existing local branch → existing remote branch (creates a
 tracking branch) → new branch from `--from` or the auto-detected main.
+
+If the repository declares submodules (a `.gitmodules` file is present), the new
+worktree runs `git submodule update --init --recursive` automatically. Disable
+this with `--no-submodules`.
 
 ### Clean merged worktrees
 

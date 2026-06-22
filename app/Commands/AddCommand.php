@@ -15,6 +15,7 @@ class AddCommand extends Command
         {--remote=origin : Remote used to validate the branch}
         {--no-fetch : Skip `git fetch` before validating the branch on the remote}
         {--target= : Override the worktree directory (defaults to <repo-parent>/<repo>-<suffix>)}
+        {--no-submodules : Skip recursive submodule init in the new worktree}
         {--y|yes : Skip confirmation when creating a new branch}';
 
     protected $description = 'Create a worktree for a new or existing branch';
@@ -117,6 +118,16 @@ class AddCommand extends Command
         }
 
         $this->components->task("Created worktree <comment>{$branch}</comment>");
+
+        if (! $this->option('no-submodules') && $service->hasSubmodules($targetPath)) {
+            [$ok, $output] = $service->updateSubmodules($targetPath);
+
+            if ($ok) {
+                $this->components->task('Initialized submodules <comment>(recursive)</comment>');
+            } else {
+                $this->components->warn("Worktree created, but submodule init failed: {$output}");
+            }
+        }
 
         return self::SUCCESS;
     }

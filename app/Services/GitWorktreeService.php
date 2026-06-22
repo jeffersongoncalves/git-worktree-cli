@@ -240,6 +240,29 @@ class GitWorktreeService
     }
 
     /**
+     * Whether the worktree at the given path declares any submodules.
+     */
+    public function hasSubmodules(string $cwd): bool
+    {
+        return is_file(rtrim($cwd, '/\\').DIRECTORY_SEPARATOR.'.gitmodules');
+    }
+
+    /**
+     * Initialise and update all submodules recursively in the given worktree.
+     *
+     * @return array{0: bool, 1: string} success flag plus combined output
+     */
+    public function updateSubmodules(string $cwd): array
+    {
+        $process = $this->git($cwd, ['submodule', 'update', '--init', '--recursive']);
+        $process->run();
+
+        $output = trim($process->getOutput().$process->getErrorOutput());
+
+        return [$process->isSuccessful(), $output];
+    }
+
+    /**
      * Find the path of the main worktree from a previously-listed set.
      *
      * @param  list<Worktree>  $worktrees
