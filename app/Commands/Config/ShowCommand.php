@@ -27,13 +27,23 @@ class ShowCommand extends Command
         if ($config->branches === []) {
             $this->newLine();
             $this->components->info('No protected branches configured.');
-
-            return self::SUCCESS;
+        } else {
+            $this->newLine();
+            $this->components->info('Protected branches:');
+            $this->table(['Pattern'], array_map(static fn (string $b): array => [$b], $config->branches));
         }
 
-        $this->newLine();
-        $this->components->info('Protected branches:');
-        $this->table(['Pattern'], array_map(static fn (string $b): array => [$b], $config->branches));
+        if ($config->copyOnAdd !== []) {
+            $this->newLine();
+            $this->components->info('Files copied on add:');
+            $this->table(['Path'], array_map(static fn (string $p): array => [$p], $config->copyOnAdd));
+        }
+
+        if ($config->postAdd !== []) {
+            $this->newLine();
+            $this->components->info('Commands run on add:');
+            $this->table(['Command'], array_map(static fn (string $c): array => [$c], $config->postAdd));
+        }
 
         return self::SUCCESS;
     }

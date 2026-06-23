@@ -75,6 +75,29 @@ it('round-trips a saved config', function () {
         ->and($loaded->branches)->toBe(['develop', 'release/*']);
 });
 
+it('round-trips add.copy and add.run config', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    $config = new RepoConfig(
+        enabled: true,
+        branches: ['develop'],
+        copyOnAdd: ['.env', 'storage/oauth-private.key'],
+        postAdd: ['composer install', 'php artisan key:generate'],
+    );
+    $this->service->save($repo->path(), $config);
+
+    $loaded = $this->service->load($repo->path());
+
+    expect($loaded->copyOnAdd)->toBe(['.env', 'storage/oauth-private.key'])
+        ->and($loaded->postAdd)->toBe(['composer install', 'php artisan key:generate']);
+});
+
+it('omits the add section when copy and run are empty', function () {
+    $config = new RepoConfig(enabled: true, branches: ['develop']);
+
+    expect($config->toArray())->not->toHaveKey('add');
+});
+
 it('returns no protected branches when config is disabled', function () {
     $repo = GitRepoBuilder::createIn($this->tmp);
     $this->service->save($repo->path(), new RepoConfig(enabled: false, branches: ['develop']));

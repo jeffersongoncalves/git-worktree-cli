@@ -263,6 +263,74 @@ class GitWorktreeService
     }
 
     /**
+     * Locate a worktree by branch name (short or full) or by path basename.
+     *
+     * @param  list<Worktree>  $worktrees
+     */
+    public function findWorktree(array $worktrees, string $needle): ?Worktree
+    {
+        $needle = trim($needle);
+
+        if ($needle === '') {
+            return null;
+        }
+
+        foreach ($worktrees as $wt) {
+            if ($wt->shortBranch() === $needle || $wt->branch === $needle) {
+                return $wt;
+            }
+        }
+
+        $normalizedNeedle = str_replace('\\', '/', rtrim($needle, '/\\'));
+
+        foreach ($worktrees as $wt) {
+            $normalizedPath = str_replace('\\', '/', rtrim($wt->path, '/\\'));
+
+            if ($normalizedPath === $normalizedNeedle || basename($normalizedPath) === basename($normalizedNeedle)) {
+                return $wt;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Whether the worktree at the given path has uncommitted changes.
+     */
+    public function isDirty(string $worktreePath): bool
+    {
+        $process = $this->git($worktreePath, ['status', '--porcelain']);
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return false;
+        }
+
+        return trim($process->getOutput()) !== '';
+    }
+
+    /**
+     * Run `git worktree prune` to drop stale administrative records.
+     *
+     * @return array{0: bool, 1: string} success flag plus combined output
+     */
+    public function pruneWorktrees(string $cwd, bool $dryRun = false): array
+    {
+        $args = ['worktree', 'prune', '-v'];
+
+        if ($dryRun) {
+            $args[] = '--dry-run';
+        }
+
+        $process = $this->git($cwd, $args);
+        $process->run();
+
+        $output = trim($process->getOutput().$process->getErrorOutput());
+
+        return [$process->isSuccessful(), $output];
+    }
+
+    /**
      * Find the path of the main worktree from a previously-listed set.
      *
      * @param  list<Worktree>  $worktrees
