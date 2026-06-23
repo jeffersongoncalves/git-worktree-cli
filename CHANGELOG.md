@@ -2,6 +2,12 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.4 - 2026-06-23
+
+### Added
+
+- `add` now recursively initializes submodules (`git submodule update --init --recursive`) in the new worktree when the repo declares a `.gitmodules`. Use `--no-submodules` to opt out.
+
 ## 1.0.3 - 2026-06-06
 
 Validate the version.txt release flow (no tag-move). Embedded version resolved from version.txt; release tag lands on a commit whose PHAR already embeds 1.0.3.
@@ -25,6 +31,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## 1.0.0 - 2026-05-07
 
@@ -43,6 +50,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 
 
 
+
 ```
 #### Upgrading
 
@@ -50,6 +58,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
@@ -88,6 +97,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -104,6 +114,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
