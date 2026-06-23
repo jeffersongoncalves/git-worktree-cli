@@ -20,8 +20,14 @@ class GitRepoBuilder
     {
         $dir = dirname(__DIR__).DIRECTORY_SEPARATOR.'tmp';
 
+        // @ + recheck: parallel test processes can race between the is_dir
+        // check and mkdir, so swallow the "File exists" loser and verify.
         if (! is_dir($dir)) {
-            mkdir($dir, 0777, true);
+            @mkdir($dir, 0777, true);
+
+            if (! is_dir($dir)) {
+                throw new \RuntimeException("Failed to create fixture base dir: {$dir}");
+            }
         }
 
         // Prevent git from walking up from this dir and finding the parent
