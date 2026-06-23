@@ -2,12 +2,15 @@
 
 namespace App\Commands;
 
+use App\Concerns\ResolvesRepoPath;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 
 class PathCommand extends Command
 {
+    use ResolvesRepoPath;
+
     protected $signature = 'path
         {target : Branch name or path of the worktree}
         {path? : Path to the git repository (defaults to the current directory)}';
@@ -44,14 +47,5 @@ class PathCommand extends Command
         $this->line($wt->path);
 
         return self::SUCCESS;
-    }
-
-    private function resolveCwd(): string
-    {
-        $arg = $this->argument('path');
-        $path = is_string($arg) && $arg !== '' ? $arg : getcwd();
-        $real = realpath((string) $path);
-
-        return $real !== false ? $real : (string) $path;
     }
 }

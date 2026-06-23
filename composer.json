@@ -16,7 +16,11 @@
     },
     "require-dev": {
         "guzzlehttp/guzzle": "^7.10",
+        "jeffersongoncalves/laravel-zero-console": "^1.0",
+        "jeffersongoncalves/laravel-zero-git": "^1.0",
+        "jeffersongoncalves/laravel-zero-json-config": "^1.0",
         "jeffersongoncalves/laravel-zero-self-update": "^1.0",
+        "jeffersongoncalves/laravel-zero-support": "^1.0",
         "laravel-zero/framework": "^12.0",
         "laravel/pint": "^1.25",
         "mockery/mockery": "^1.6",

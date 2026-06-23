@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\ResolvesRepoPath;
 use App\DTOs\MergeStatus;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
@@ -9,6 +10,8 @@ use RuntimeException;
 
 class CheckCommand extends Command
 {
+    use ResolvesRepoPath;
+
     protected $signature = 'check
         {path? : Path to the git repository (defaults to the current directory)}
         {--main= : Name of the main branch (auto-detected when omitted)}
@@ -145,16 +148,5 @@ class CheckCommand extends Command
         }
 
         return $path;
-    }
-
-    private function resolveCwd(): string
-    {
-        $arg = $this->argument('path');
-
-        $path = is_string($arg) && $arg !== '' ? $arg : getcwd();
-
-        $real = realpath((string) $path);
-
-        return $real !== false ? $real : (string) $path;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\ResolvesRepoPath;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
@@ -10,6 +11,8 @@ use function Laravel\Prompts\confirm;
 
 class RemoveCommand extends Command
 {
+    use ResolvesRepoPath;
+
     protected $signature = 'remove
         {target : Branch name or path of the worktree to remove}
         {path? : Path to the git repository (defaults to the current directory)}
@@ -113,14 +116,5 @@ class RemoveCommand extends Command
         }
 
         return confirm(label: "Remove worktree '{$label}'?", default: false);
-    }
-
-    private function resolveCwd(): string
-    {
-        $arg = $this->argument('path');
-        $path = is_string($arg) && $arg !== '' ? $arg : getcwd();
-        $real = realpath((string) $path);
-
-        return $real !== false ? $real : (string) $path;
     }
 }

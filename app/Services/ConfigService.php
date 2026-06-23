@@ -3,6 +3,10 @@
 namespace App\Services;
 
 use App\DTOs\RepoConfig;
+use JeffersonGoncalves\LaravelZero\Git\GitRemoteParser;
+use JeffersonGoncalves\LaravelZero\JsonConfig\JsonConfigService;
+use JeffersonGoncalves\LaravelZero\JsonConfig\Scopes\PerRepoScope;
+use JeffersonGoncalves\LaravelZero\Support\Filesystem;
 use Symfony\Component\Process\Process;
 
 class ConfigService
@@ -35,7 +39,7 @@ class ConfigService
         $url = $this->gitOutput($cwd, ['config', '--get', 'remote.origin.url']);
 
         if ($url !== null && $url !== '') {
-            $slug = $this->slugFromRemote($url);
+            $slug = GitRemoteParser::slug($url);
 
             if ($slug !== null) {
                 return $slug;
@@ -53,48 +57,17 @@ class ConfigService
 
     public function path(string $cwd): string
     {
-        return $this->configDir().DIRECTORY_SEPARATOR.$this->repoSlug($cwd).'.json';
+        return $this->store($cwd)->path();
     }
 
     public function load(string $cwd): RepoConfig
     {
-        $path = $this->path($cwd);
-
-        if (! is_file($path)) {
-            return new RepoConfig;
-        }
-
-        $raw = file_get_contents($path);
-
-        if ($raw === false) {
-            return new RepoConfig;
-        }
-
-        $data = json_decode($raw, true);
-
-        if (! is_array($data)) {
-            return new RepoConfig;
-        }
-
-        return RepoConfig::fromArray($data);
+        return RepoConfig::fromArray($this->store($cwd)->all());
     }
 
     public function save(string $cwd, RepoConfig $config): void
     {
-        $dir = $this->configDir();
-
-        if (! is_dir($dir)) {
-            @mkdir($dir, 0700, true);
-        }
-
-        $json = json_encode($config->toArray(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-
-        if ($json === false) {
-            return;
-        }
-
-        file_put_contents($this->path($cwd), $json.PHP_EOL);
-        @chmod($this->path($cwd), 0600);
+        Filesystem::writeJsonSecure($this->path($cwd), $config->toArray());
     }
 
     /**
@@ -134,20 +107,9 @@ class ConfigService
         return false;
     }
 
-    private function slugFromRemote(string $url): ?string
+    private function store(string $cwd): JsonConfigService
     {
-        $url = trim($url);
-        $url = preg_replace('#\.git$#', '', $url) ?? $url;
-
-        // git@host:owner/repo  ->  owner/repo
-        // ssh|https://host/owner/repo  ->  owner/repo
-        if (preg_match('#[:/]([^/:]+)/([^/]+)$#', $url, $m) !== 1) {
-            return null;
-        }
-
-        $slug = $this->sanitize($m[1]).'-'.$this->sanitize($m[2]);
-
-        return trim($slug, '-') !== '' ? $slug : null;
+        return new JsonConfigService(new PerRepoScope('git-worktree', $this->repoSlug($cwd)));
     }
 
     private function sanitize(string $value): string

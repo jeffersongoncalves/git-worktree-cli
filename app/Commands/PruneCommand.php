@@ -2,11 +2,14 @@
 
 namespace App\Commands;
 
+use App\Concerns\ResolvesRepoPath;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
 
 class PruneCommand extends Command
 {
+    use ResolvesRepoPath;
+
     protected $signature = 'prune
         {path? : Path to the git repository (defaults to the current directory)}
         {--dry-run : Show what would be pruned without removing anything}';
@@ -46,14 +49,5 @@ class PruneCommand extends Command
         $this->components->info($dryRun ? 'Dry run: no records were removed.' : 'Pruned stale worktree records.');
 
         return self::SUCCESS;
-    }
-
-    private function resolveCwd(): string
-    {
-        $arg = $this->argument('path');
-        $path = is_string($arg) && $arg !== '' ? $arg : getcwd();
-        $real = realpath((string) $path);
-
-        return $real !== false ? $real : (string) $path;
     }
 }

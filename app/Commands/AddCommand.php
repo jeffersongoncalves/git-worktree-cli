@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\ResolvesRepoPath;
 use App\Services\ConfigService;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
@@ -10,6 +11,8 @@ use Symfony\Component\Process\Process;
 
 class AddCommand extends Command
 {
+    use ResolvesRepoPath;
+
     protected $signature = 'add
         {branch : Branch name (new or existing)}
         {path? : Path to the git repository (defaults to the current directory)}
@@ -283,14 +286,5 @@ class AddCommand extends Command
             "Branch '{$branch}' does not exist. Create new branch and worktree?",
             true,
         );
-    }
-
-    private function resolveCwd(): string
-    {
-        $arg = $this->argument('path');
-        $path = is_string($arg) && $arg !== '' ? $arg : getcwd();
-        $real = realpath((string) $path);
-
-        return $real !== false ? $real : (string) $path;
     }
 }
