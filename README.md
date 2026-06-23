@@ -78,6 +78,15 @@ git-worktree add my-feat --no-fetch
 
 # Skip recursive submodule init in the new worktree
 git-worktree add my-feat --no-submodules
+
+# Copy untracked files (e.g. .env) from the main worktree into the new one
+git-worktree add my-feat --copy=.env --copy=auth.json
+
+# Run setup commands inside the new worktree after creation
+git-worktree add my-feat --run='composer install' --run='php artisan key:generate'
+
+# Ignore the per-repo add.copy / add.run config for this run
+git-worktree add my-feat --no-config
 ```
 
 Resolution order: existing local branch → existing remote branch (creates a
@@ -86,6 +95,20 @@ tracking branch) → new branch from `--from` or the auto-detected main.
 If the repository declares submodules (a `.gitmodules` file is present), the new
 worktree runs `git submodule update --init --recursive` automatically. Disable
 this with `--no-submodules`.
+
+`--copy` and `--run` make a new worktree usable immediately: copy the local
+config a fresh checkout lacks (`.env`, `auth.json`, signing keys) and run setup
+commands (`composer install`, …). Both can be made persistent per repo via the
+`add` section of the config file (see [Per-repo config](#protected-branches)):
+
+```json
+{
+    "add": {
+        "copy": [".env", "auth.json"],
+        "run": ["composer install"]
+    }
+}
+```
 
 ### Clean merged worktrees
 
@@ -154,10 +177,67 @@ falling back to the directory name plus a short hash when there is no remote):
 `"enabled": false`) turns it off persistently. Either way, `--protect` flags
 still apply.
 
+### Remove a single worktree
+
+`clean` removes *merged* worktrees in bulk; `remove` targets one by branch name
+or path, regardless of merge status:
+
+```bash
+# Remove by branch name (prompts; refuses if dirty)
+git-worktree remove feature/login
+
+# Skip confirmation and also delete the local branch
+git-worktree remove feature/login --yes --delete-branch
+
+# Force removal of a worktree with uncommitted changes
+git-worktree remove feature/login --force --yes
+```
+
 ### List worktrees
 
 ```bash
+# Basic listing
 git-worktree list-worktrees
+
+# Include merge status against the main branch and a clean/dirty flag
+git-worktree list-worktrees --status
+```
+
+### Prune stale records
+
+After a worktree directory is deleted manually, git keeps a stale admin record.
+Clear them:
+
+```bash
+git-worktree prune            # remove stale records
+git-worktree prune --dry-run  # show what would be pruned
+```
+
+### Jump to a worktree (shell integration)
+
+`path` prints a worktree's absolute path so your shell can `cd` into it:
+
+```bash
+cd "$(git-worktree path feature/login)"
+```
+
+Install the `gwt` helper so `gwt cd <branch>` changes directory for you:
+
+```bash
+# bash / zsh — add to ~/.bashrc or ~/.zshrc
+eval "$(git-worktree shell-init)"
+
+# fish — add to ~/.config/fish/config.fish
+git-worktree shell-init fish | source
+```
+
+Then: `gwt cd feature/login`. Any other `gwt <args>` forwards to `git-worktree`.
+
+### Open a worktree in your editor
+
+```bash
+git-worktree open feature/login                 # uses $VISUAL, $EDITOR, then "code"
+git-worktree open feature/login --editor=subl
 ```
 
 ### Keep the CLI up to date

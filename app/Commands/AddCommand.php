@@ -2,9 +2,11 @@
 
 namespace App\Commands;
 
+use App\Services\ConfigService;
 use App\Services\GitWorktreeService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
+use Symfony\Component\Process\Process;
 
 class AddCommand extends Command
 {
@@ -16,11 +18,14 @@ class AddCommand extends Command
         {--no-fetch : Skip `git fetch` before validating the branch on the remote}
         {--target= : Override the worktree directory (defaults to <repo-parent>/<repo>-<suffix>)}
         {--no-submodules : Skip recursive submodule init in the new worktree}
+        {--copy=* : Copy a file/dir (e.g. .env) from the main worktree into the new one (repeatable)}
+        {--run=* : Run a command inside the new worktree after creation (repeatable)}
+        {--no-config : Ignore the per-repo add.copy / add.run config}
         {--y|yes : Skip confirmation when creating a new branch}';
 
     protected $description = 'Create a worktree for a new or existing branch';
 
-    public function handle(GitWorktreeService $service): int
+    public function handle(GitWorktreeService $service, ConfigService $config): int
     {
         $cwd = $this->resolveCwd();
         $branch = trim((string) $this->argument('branch'));
@@ -119,6 +124,8 @@ class AddCommand extends Command
 
         $this->components->task("Created worktree <comment>{$branch}</comment>");
 
+        $this->copyFiles($config, $mainPath, $targetPath);
+
         if (! $this->option('no-submodules') && $service->hasSubmodules($targetPath)) {
             [$ok, $output] = $service->updateSubmodules($targetPath);
 
@@ -129,7 +136,119 @@ class AddCommand extends Command
             }
         }
 
+        $this->runHooks($config, $targetPath);
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Copy configured/requested files from the main worktree into the new one.
+     */
+    private function copyFiles(ConfigService $config, string $mainPath, string $targetPath): void
+    {
+        foreach ($this->resolveList('copy', $config) as $relative) {
+            $source = rtrim($mainPath, '/\\').DIRECTORY_SEPARATOR.$relative;
+            $dest = rtrim($targetPath, '/\\').DIRECTORY_SEPARATOR.$relative;
+
+            if (! file_exists($source)) {
+                $this->components->warn("Skipped copy (not found in main worktree): {$relative}");
+
+                continue;
+            }
+
+            if (! $this->copyPath($source, $dest)) {
+                $this->components->warn("Failed to copy: {$relative}");
+
+                continue;
+            }
+
+            $this->components->task("Copied <comment>{$relative}</comment>");
+        }
+    }
+
+    /**
+     * Run configured/requested commands inside the new worktree.
+     */
+    private function runHooks(ConfigService $config, string $targetPath): void
+    {
+        foreach ($this->resolveList('run', $config) as $command) {
+            $this->components->info("Running: <comment>{$command}</comment>");
+
+            $process = Process::fromShellCommandline($command, $targetPath);
+            $process->setTimeout(600);
+            $process->run(function ($type, $buffer): void {
+                $this->output->write($buffer);
+            });
+
+            if ($process->isSuccessful()) {
+                $this->components->task("Ran <comment>{$command}</comment>");
+            } else {
+                $this->components->warn("Command failed (exit {$process->getExitCode()}): {$command}");
+            }
+        }
+    }
+
+    /**
+     * Merge CLI flag values with the per-repo config list for the given key.
+     *
+     * @return list<string>
+     */
+    private function resolveList(string $key, ConfigService $config): array
+    {
+        $fromFlag = array_values(array_filter(
+            array_map(static fn ($v): string => trim((string) $v), (array) $this->option($key)),
+            static fn (string $v): bool => $v !== '',
+        ));
+
+        $fromConfig = [];
+
+        if (! $this->option('no-config')) {
+            $repo = $config->load($this->resolveCwd());
+            $fromConfig = $key === 'copy' ? $repo->copyOnAdd : $repo->postAdd;
+        }
+
+        return array_values(array_unique([...$fromConfig, ...$fromFlag]));
+    }
+
+    private function copyPath(string $source, string $dest): bool
+    {
+        if (is_dir($source)) {
+            return $this->copyDir($source, $dest);
+        }
+
+        $parent = dirname($dest);
+
+        if (! is_dir($parent) && ! @mkdir($parent, 0777, true) && ! is_dir($parent)) {
+            return false;
+        }
+
+        return @copy($source, $dest);
+    }
+
+    private function copyDir(string $source, string $dest): bool
+    {
+        if (! is_dir($dest) && ! @mkdir($dest, 0777, true) && ! is_dir($dest)) {
+            return false;
+        }
+
+        $entries = scandir($source) ?: [];
+
+        foreach ($entries as $entry) {
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
+
+            $from = $source.DIRECTORY_SEPARATOR.$entry;
+            $to = $dest.DIRECTORY_SEPARATOR.$entry;
+
+            $ok = is_dir($from) ? $this->copyDir($from, $to) : @copy($from, $to);
+
+            if (! $ok) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function resolveTargetPath(string $mainPath, string $branch): string

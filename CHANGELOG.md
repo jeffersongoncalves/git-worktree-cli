@@ -2,6 +2,20 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.5 - 2026-06-23
+
+### Added
+
+- `remove <branch|path>` — remove a single worktree by branch name or path, regardless of merge status (refuses the main worktree, prompts on dirty state). Supports `--yes`, `--force`, `--delete-branch`.
+- `prune` — wrap `git worktree prune` to clear stale administrative records (`--dry-run` supported).
+- `path <branch|path>` — print a worktree's absolute path for shell `cd` integration.
+- `shell-init [bash|zsh|fish]` — print a `gwt` shell function so `gwt cd <branch>` changes directory.
+- `open <branch|path>` — open a worktree in `$VISUAL`/`$EDITOR` (falls back to `code`); override with `--editor`.
+- `add --copy=<path>` — copy untracked files (e.g. `.env`) from the main worktree into the new one (repeatable).
+- `add --run=<command>` — run setup commands inside the new worktree after creation (repeatable).
+- Per-repo `add` config (`add.copy`, `add.run`) read on every `add`; surfaced in `config:show`. Skip with `--no-config`.
+- `list-worktrees --status` — include merge status against the main branch plus a clean/dirty flag.
+
 ## 1.0.4 - 2026-06-23
 
 ### Added

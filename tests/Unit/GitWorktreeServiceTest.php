@@ -124,6 +124,44 @@ it('detects whether a worktree declares submodules', function () {
     expect($this->service->hasSubmodules($repo->path()))->toBeTrue();
 });
 
+it('finds a worktree by branch name or path basename', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+    $repo->checkoutNewBranch('feature');
+    $repo->commitFile('f.txt', 'feature');
+    $repo->checkout('main');
+    $linkedPath = $repo->addWorktree('wt', 'feature');
+
+    $worktrees = $this->service->listWorktrees($repo->path());
+
+    expect($this->service->findWorktree($worktrees, 'feature'))->not->toBeNull()
+        ->and($this->service->findWorktree($worktrees, 'feature')->shortBranch())->toBe('feature')
+        ->and($this->service->findWorktree($worktrees, basename($linkedPath)))->not->toBeNull()
+        ->and($this->service->findWorktree($worktrees, 'nope'))->toBeNull()
+        ->and($this->service->findWorktree($worktrees, ''))->toBeNull();
+});
+
+it('detects a dirty worktree', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    expect($this->service->isDirty($repo->path()))->toBeFalse();
+
+    file_put_contents($repo->path('dirty.txt'), 'uncommitted');
+
+    expect($this->service->isDirty($repo->path()))->toBeTrue();
+});
+
+it('prunes stale worktree records', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    [$ok, $output] = $this->service->pruneWorktrees($repo->path());
+
+    expect($ok)->toBeTrue()
+        ->and($output)->toBe('');
+
+    [$dryOk] = $this->service->pruneWorktrees($repo->path(), dryRun: true);
+    expect($dryOk)->toBeTrue();
+});
+
 it('removes a worktree and deletes its branch', function () {
     $repo = GitRepoBuilder::createIn($this->tmp);
     $repo->checkoutNewBranch('feat');

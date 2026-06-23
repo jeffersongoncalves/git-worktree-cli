@@ -107,6 +107,54 @@ it('fails when the target path already exists', function () {
         ->assertExitCode(1);
 });
 
+it('copies requested files into the new worktree', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+    file_put_contents($repo->path('.env'), 'APP_ENV=local');
+
+    $target = dirname($repo->path()).DIRECTORY_SEPARATOR.basename($repo->path()).'-feature';
+
+    $this->artisan('add', [
+        'branch' => 'feature',
+        'path' => $repo->path(),
+        '--no-fetch' => true,
+        '--yes' => true,
+        '--copy' => ['.env'],
+    ])
+        ->expectsOutputToContain('Copied')
+        ->assertExitCode(0);
+
+    expect(is_file($target.DIRECTORY_SEPARATOR.'.env'))->toBeTrue()
+        ->and(file_get_contents($target.DIRECTORY_SEPARATOR.'.env'))->toBe('APP_ENV=local');
+});
+
+it('warns when a file to copy is missing in the main worktree', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    $this->artisan('add', [
+        'branch' => 'feature',
+        'path' => $repo->path(),
+        '--no-fetch' => true,
+        '--yes' => true,
+        '--copy' => ['.env'],
+    ])
+        ->expectsOutputToContain('Skipped copy')
+        ->assertExitCode(0);
+});
+
+it('runs post-create hooks inside the new worktree', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    $this->artisan('add', [
+        'branch' => 'feature',
+        'path' => $repo->path(),
+        '--no-fetch' => true,
+        '--yes' => true,
+        '--run' => ['git status'],
+    ])
+        ->expectsOutputToContain('Ran')
+        ->assertExitCode(0);
+});
+
 it('honors --target to override the worktree directory', function () {
     $repo = GitRepoBuilder::createIn($this->tmp);
     $repo->checkoutNewBranch('feature');
