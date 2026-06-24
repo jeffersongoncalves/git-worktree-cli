@@ -255,6 +255,9 @@ class GitWorktreeService
     public function updateSubmodules(string $cwd): array
     {
         $process = $this->git($cwd, ['submodule', 'update', '--init', '--recursive']);
+        // Submodule init clones over the network and can take arbitrarily long
+        // for large or numerous submodules; no fixed timeout.
+        $process->setTimeout(null);
         $process->run();
 
         $output = trim($process->getOutput().$process->getErrorOutput());
