@@ -2,6 +2,12 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## 1.0.6 - 2026-06-24
+
+### Fixed
+
+- `add`: removed the fixed 60s timeout on recursive submodule init. `git submodule update --init --recursive` is network-bound and could exceed the timeout for large or numerous submodules; it now runs without a timeout.
+
 ## 1.0.5 - 2026-06-23
 
 ### Added
@@ -46,6 +52,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## 1.0.0 - 2026-05-07
 
@@ -65,6 +72,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 
 
 
+
 ```
 #### Upgrading
 
@@ -72,6 +80,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
@@ -112,6 +121,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -128,6 +138,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
