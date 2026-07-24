@@ -2,6 +2,10 @@
 
 All notable changes to `git-worktree-cli` will be documented in this file.
 
+## v1.0.7 - 2026-07-24
+
+Release v1.0.7
+
 ## 1.0.6 - 2026-06-24
 
 ### Fixed
@@ -53,6 +57,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## 1.0.0 - 2026-05-07
 
@@ -73,6 +78,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 
 
 
+
 ```
 #### Upgrading
 
@@ -80,6 +86,7 @@ git-worktree add my-feat --target=/tmp/wt-myfeat
 git-worktree self-update
 # or
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
@@ -122,6 +129,7 @@ composer global update jeffersongoncalves/git-worktree-cli
 
 
 
+
 ```
 ## v0.0.2 - 2026-04-16
 
@@ -138,6 +146,7 @@ git-worktree self-update
 
 # or via Composer
 composer global update jeffersongoncalves/git-worktree-cli
+
 
 
 
