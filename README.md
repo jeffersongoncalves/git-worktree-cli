@@ -193,6 +193,22 @@ git-worktree remove feature/login --yes --delete-branch
 git-worktree remove feature/login --force --yes
 ```
 
+### Auto-unlink Herd before removing
+
+If worktrees get linked into [Laravel Herd](https://herd.laravel.com), Herd's
+nginx site config can linger after the worktree folder is gone. Enable
+auto-unlink (global setting, applies to `remove` and `clean`):
+
+```bash
+git-worktree config:herd enable
+git-worktree config:herd disable
+git-worktree config:herd status   # default action, shows current state
+```
+
+Off by default. When enabled, `remove` and `clean` run `herd unlink` on the
+worktree path before removing it — warns (does not fail the command) if the
+`herd` CLI is missing or the unlink itself errors.
+
 ### List worktrees
 
 ```bash
