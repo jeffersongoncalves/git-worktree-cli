@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\DTOs\GlobalConfig;
 use App\DTOs\RepoConfig;
 use JeffersonGoncalves\LaravelZero\Git\GitRemoteParser;
 use JeffersonGoncalves\LaravelZero\JsonConfig\JsonConfigService;
+use JeffersonGoncalves\LaravelZero\JsonConfig\Scopes\GlobalScope;
 use JeffersonGoncalves\LaravelZero\JsonConfig\Scopes\PerRepoScope;
 use JeffersonGoncalves\LaravelZero\Support\Filesystem;
 use Symfony\Component\Process\Process;
@@ -107,9 +109,27 @@ class ConfigService
         return false;
     }
 
+    /**
+     * Machine-wide config, shared across every repo (~/.git-worktree/config.json).
+     */
+    public function loadGlobal(): GlobalConfig
+    {
+        return GlobalConfig::fromArray($this->globalStore()->all());
+    }
+
+    public function saveGlobal(GlobalConfig $config): void
+    {
+        Filesystem::writeJsonSecure($this->globalStore()->path(), $config->toArray());
+    }
+
     private function store(string $cwd): JsonConfigService
     {
         return new JsonConfigService(new PerRepoScope('git-worktree', $this->repoSlug($cwd)));
+    }
+
+    private function globalStore(): JsonConfigService
+    {
+        return new JsonConfigService(new GlobalScope('git-worktree'));
     }
 
     private function sanitize(string $value): string

@@ -6,6 +6,7 @@ use App\Concerns\ResolvesRepoPath;
 use App\DTOs\MergeStatus;
 use App\Services\ConfigService;
 use App\Services\GitWorktreeService;
+use App\Services\HerdService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 
@@ -28,7 +29,7 @@ class CleanCommand extends Command
 
     protected $description = 'Remove worktrees whose branches are already merged into the main branch';
 
-    public function handle(GitWorktreeService $service, ConfigService $config): int
+    public function handle(GitWorktreeService $service, ConfigService $config, HerdService $herd): int
     {
         $cwd = $this->resolveCwd();
 
@@ -94,7 +95,7 @@ class CleanCommand extends Command
             return self::SUCCESS;
         }
 
-        return $this->removeAll($service, $cwd, $candidates);
+        return $this->removeAll($service, $config, $herd, $cwd, $candidates);
     }
 
     /**
@@ -181,17 +182,33 @@ class CleanCommand extends Command
     /**
      * @param  list<MergeStatus>  $candidates
      */
-    private function removeAll(GitWorktreeService $service, string $cwd, array $candidates): int
+    private function removeAll(GitWorktreeService $service, ConfigService $config, HerdService $herd, string $cwd, array $candidates): int
     {
         $removed = 0;
         $failed = 0;
         $branchesDeleted = 0;
         $force = (bool) $this->option('force');
         $deleteBranch = (bool) $this->option('delete-branch');
+        $herdUnlinkEnabled = $config->loadGlobal()->herdUnlinkOnRemove;
+
+        if ($herdUnlinkEnabled && ! $herd->isAvailable()) {
+            $this->components->warn('Herd unlink on remove is enabled but the `herd` CLI was not found.');
+            $herdUnlinkEnabled = false;
+        }
 
         foreach ($candidates as $result) {
             $wt = $result->worktree;
             $label = $wt->shortBranch() ?? $wt->label();
+
+            if ($herdUnlinkEnabled) {
+                [$herdOk, $herdOutput] = $herd->unlink($wt->path);
+
+                if ($herdOk) {
+                    $this->components->task("Unlinked <comment>{$label}</comment> from Herd");
+                } else {
+                    $this->components->warn("Could not unlink {$label} from Herd: {$herdOutput}");
+                }
+            }
 
             [$ok, $output] = $service->removeWorktree($cwd, $wt->path, $force);
 

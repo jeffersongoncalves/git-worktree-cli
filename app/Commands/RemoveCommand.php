@@ -3,7 +3,9 @@
 namespace App\Commands;
 
 use App\Concerns\ResolvesRepoPath;
+use App\Services\ConfigService;
 use App\Services\GitWorktreeService;
+use App\Services\HerdService;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 
@@ -22,7 +24,7 @@ class RemoveCommand extends Command
 
     protected $description = 'Remove a single worktree by branch name or path';
 
-    public function handle(GitWorktreeService $service): int
+    public function handle(GitWorktreeService $service, ConfigService $config, HerdService $herd): int
     {
         $cwd = $this->resolveCwd();
 
@@ -73,6 +75,8 @@ class RemoveCommand extends Command
             return self::SUCCESS;
         }
 
+        $this->herdUnlink($config, $herd, $wt->path);
+
         [$ok, $output] = $service->removeWorktree($cwd, $wt->path, (bool) $this->option('force'));
 
         if (! $ok) {
@@ -94,6 +98,27 @@ class RemoveCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    private function herdUnlink(ConfigService $config, HerdService $herd, string $path): void
+    {
+        if (! $config->loadGlobal()->herdUnlinkOnRemove) {
+            return;
+        }
+
+        if (! $herd->isAvailable()) {
+            $this->components->warn('Herd unlink on remove is enabled but the `herd` CLI was not found.');
+
+            return;
+        }
+
+        [$ok, $output] = $herd->unlink($path);
+
+        if ($ok) {
+            $this->components->task('Unlinked from Herd');
+        } else {
+            $this->components->warn("Could not unlink from Herd: {$output}");
+        }
     }
 
     private function confirmDirty(string $label): bool
