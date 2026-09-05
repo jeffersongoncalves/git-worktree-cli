@@ -6,6 +6,8 @@
 
 # git-worktree-cli
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/jeffersongoncalves)
+
 CLI tool to audit git worktrees in a repository and report whether each
 worktree's branch has already been merged into the main branch. Includes
 a `clean` command to remove merged worktrees and keep the workspace tidy.
