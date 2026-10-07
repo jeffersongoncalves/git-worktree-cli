@@ -1,5 +1,7 @@
 <?php
 
+use Symfony\Component\Process\InputStream;
+use Symfony\Component\Process\Process;
 use Tests\Support\GitRepoBuilder;
 
 beforeEach(function () {
@@ -87,6 +89,21 @@ it('aborts when the user declines the create-branch confirmation', function () {
 
     $list = $repo->git(['branch', '--list', 'never-created']);
     expect(trim($list))->toBe('');
+});
+
+it('does not wait for input when stdin is not a TTY', function () {
+    $repo = GitRepoBuilder::createIn($this->tmp);
+
+    $process = new Process(
+        [PHP_BINARY, base_path('git-worktree'), 'add', 'piped', $repo->path(), '--no-fetch'],
+    );
+    // Open-but-silent stdin, like an agent harness: a prompt would block until the timeout.
+    $process->setInput(new InputStream);
+    $process->setTimeout(30);
+    $process->run();
+
+    expect($process->getExitCode())->toBe(0)
+        ->and($repo->git(['worktree', 'list']))->toContain('piped');
 });
 
 it('fails when the target path already exists', function () {

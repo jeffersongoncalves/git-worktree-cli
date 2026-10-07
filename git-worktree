@@ -21,8 +21,15 @@ $app = require_once __DIR__.'/bootstrap/app.php';
 
 $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
 
+$input = new Symfony\Component\Console\Input\ArgvInput;
+
+// No TTY on stdin (AI agents, CI, pipes): nobody can answer a prompt, so behave like --no-interaction.
+if (! stream_isatty(STDIN)) {
+    $input->setInteractive(false);
+}
+
 $status = $kernel->handle(
-    $input = new Symfony\Component\Console\Input\ArgvInput,
+    $input,
     new Symfony\Component\Console\Output\ConsoleOutput
 );
 
