@@ -79,6 +79,10 @@ git-worktree add hotfix/login
 # Brand-new branch from the auto-detected main (skip prompt)
 git-worktree add my-new-feature --yes
 
+# Scripts, CI and AI agents: without a TTY on stdin (or with -n) nothing prompts.
+# `add` creates the new branch (prompt default); `remove`/`clean` refuse unless --yes.
+git-worktree add 2.x --from=3.x --yes
+
 # Custom base ref + custom target directory
 git-worktree add my-feat --from=develop --target=/tmp/wt-myfeat
 
