@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.10] - 2026-10-07
+
+### Bug Fixes
+
+- Skip prompts when stdin is not a TTY (#15)
+
+### CI/CD
+
+- Pass release version input through env
+- Standardize dependabot config
+- Standardize tests workflow
+- Remove run-tests.yml (replaced by tests.yml)
+- Standardize tests workflow
+- Auto-merge dependabot github-actions minor/patch
+
+### Dependencies
+
+- **deps:** Bump orhun/git-cliff-action from 4.8.0 to 4.9.0
+- **deps:** Bump orhun/git-cliff-action (#13)
+
+### Documentation
+
+- Point tests badge to tests.yml
+- Fix banner layout
+
 ## [1.0.9] - 2026-09-08
 
 ### Bug Fixes
