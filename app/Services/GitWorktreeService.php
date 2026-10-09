@@ -363,6 +363,9 @@ class GitWorktreeService
         $args[] = $path;
 
         $process = $this->git($cwd, $args);
+        // Deleting a worktree with vendor/ and node_modules/ can take minutes
+        // on Windows/NTFS; no fixed timeout.
+        $process->setTimeout(null);
         $process->run();
 
         $output = trim($process->getOutput().$process->getErrorOutput());
