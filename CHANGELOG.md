@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.11] - 2026-10-09
+
+### Bug Fixes
+
+- Remove worktree without process timeout (#17)
+
 ## [1.0.10] - 2026-10-07
 
 ### Bug Fixes
