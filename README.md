@@ -19,12 +19,12 @@ other CLIs in this monorepo.
   <a href="https://github.com/jeffersongoncalves/git-worktree-cli/actions"><img src="https://github.com/jeffersongoncalves/git-worktree-cli/actions/workflows/tests.yml/badge.svg" alt="Tests" /></a>
   <a href="https://packagist.org/packages/jeffersongoncalves/git-worktree-cli"><img src="https://img.shields.io/packagist/dt/jeffersongoncalves/git-worktree-cli" alt="Total Downloads" /></a>
   <a href="https://github.com/jeffersongoncalves/git-worktree-cli/blob/main/LICENSE"><img src="https://img.shields.io/github/license/jeffersongoncalves/git-worktree-cli" alt="License" /></a>
-  <img src="https://img.shields.io/badge/php-%3E%3D8.2-8892BF" alt="PHP 8.2+" />
+  <img src="https://img.shields.io/badge/php-%3E%3D8.3-8892BF" alt="PHP 8.3+" />
 </p>
 
 ## Requirements
 
-- PHP `^8.2`
+- PHP `^8.3`
 - `git` available on `PATH`
 - A git repository with at least one linked worktree
 
