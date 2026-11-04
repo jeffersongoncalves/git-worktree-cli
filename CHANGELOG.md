@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-11-04
+
+### Dependencies
+
+- **deps:** Bump shivammathur/setup-php (#18)
+- **deps:** Bump stefanzweifel/git-auto-commit-action (#20)
+
+### Miscellaneous Tasks
+
+- Upgrade to Laravel Zero 13
+
+### Other
+
+- Auto-assign issues and pull requests
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
 ## [1.0.11] - 2026-10-09
 
 ### Bug Fixes
